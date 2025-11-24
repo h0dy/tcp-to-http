@@ -9,10 +9,10 @@ import (
 	"os"
 )
 
-const PORT = 42069
+const port = 42069
 
 func main() {
-	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("127.0.0.1:%v", PORT))
+	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("127.0.0.1:%v", port))
 	if err != nil {
 		log.Fatalf("Couldn't set up UDP address: %v\n", err)
 	}

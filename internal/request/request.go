@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/h0dy/tcp-to-http/internal/headers"
@@ -16,12 +17,15 @@ const (
 	requestInitialized requestState = iota
 	requestDone
 	requestParsingHeader
+	requestParsingBody
 )
 
 type Request struct {
-	RequestLine RequestLine
-	state       requestState
-	Headers     headers.Headers
+	state          requestState
+	RequestLine    RequestLine
+	Headers        headers.Headers
+	Body           []byte
+	bodyLengthRead int
 }
 
 type RequestLine struct {
@@ -44,6 +48,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	request := &Request{
 		state:   requestInitialized,
 		Headers: headers.NewHeaders(),
+		Body:    make([]byte, 0),
 	}
 
 	for request.state != requestDone {
@@ -119,9 +124,32 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 			return 0, err
 		}
 		if done {
-			r.state = requestDone
+			r.state = requestParsingBody
 		}
 		return n, nil
+
+	case requestParsingBody:
+		lengthVal, ok := r.Headers.Get("content-length")
+		if !ok {
+			r.state = requestDone
+			return len(data), nil
+		}
+
+		length, err := strconv.Atoi(lengthVal)
+		if err != nil {
+			return 0, fmt.Errorf("error: Content-Length header contains invalid data (non-numeric)")
+		}
+
+		r.Body = append(r.Body, data...)
+		r.bodyLengthRead += len(data)
+
+		if r.bodyLengthRead > length {
+			return 0, fmt.Errorf("error: body's length doesn't match Content-Length header\nContent-Length: %v, body's length: %v", length, len(data))
+		}
+		if length == len(r.Body) {
+			r.state = requestDone
+		}
+		return len(data), nil
 
 	case requestDone:
 		return 0, fmt.Errorf("error: trying to read data in a done state")
