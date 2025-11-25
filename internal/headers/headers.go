@@ -81,3 +81,8 @@ func (h Headers) Update(key, value string) {
 func NewHeaders() Headers {
 	return Headers{}
 }
+
+func (h Headers) Remove(key string) {
+	key = strings.ToLower(key)
+	delete(h, key)
+}

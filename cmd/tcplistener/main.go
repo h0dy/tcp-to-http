@@ -4,14 +4,25 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/h0dy/tcp-to-http/internal/request"
+	"github.com/joho/godotenv"
 )
 
-const port = ":8080"
-
 func main() {
-	listener, err := net.Listen("tcp", port)
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatalln("please make sure to setup PORT env")
+	}
+
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("couldn't set up tcp listener: %v\n", err)
 	}

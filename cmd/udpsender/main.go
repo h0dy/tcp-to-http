@@ -7,11 +7,22 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
-const port = 8080
-
 func main() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatalln("please make sure to setup PORT env")
+	}
+
 	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("127.0.0.1:%v", port))
 	if err != nil {
 		log.Fatalf("Couldn't set up UDP address: %v\n", err)
