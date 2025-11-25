@@ -60,6 +60,7 @@ func parseAndValidateHeader(line [][]byte) (string, string, error) {
 }
 
 func (h Headers) Set(key, value string) {
+	key = strings.ToLower(key)
 	if old, ok := h[key]; ok {
 		value = old + ", " + value
 		h[key] = value
@@ -70,6 +71,11 @@ func (h Headers) Set(key, value string) {
 func (h Headers) Get(key string) (string, bool) {
 	val, ok := h[key]
 	return val, ok
+}
+
+func (h Headers) Update(key, value string) {
+	key = strings.ToLower(key)
+	h[key] = value
 }
 
 func NewHeaders() Headers {

@@ -8,7 +8,7 @@ import (
 	"github.com/h0dy/tcp-to-http/internal/request"
 )
 
-const port = ":42069"
+const port = ":8080"
 
 func main() {
 	listener, err := net.Listen("tcp", port)
@@ -39,6 +39,5 @@ func main() {
 		for h, v := range req.Headers {
 			fmt.Printf("- %s: %s\n", h, v)
 		}
-		fmt.Printf("Body:\n%s", string(req.Body))
 	}
 }

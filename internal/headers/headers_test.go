@@ -10,17 +10,17 @@ import (
 func TestNewHeader(t *testing.T) {
 	// Test: Valid single header
 	headers := NewHeaders()
-	data := []byte("Host: localhost:42069\r\n\r\n")
+	data := []byte("Host: localhost:8080\r\n\r\n")
 	n, done, err := headers.Parse(data)
 	require.NoError(t, err)
 	require.NotNil(t, headers)
-	assert.Equal(t, "localhost:42069", headers["host"])
+	assert.Equal(t, "localhost:8080", headers["host"])
 	assert.Equal(t, 23, n)
 	assert.False(t, done)
 
 	// Test: Invalid spacing header
 	headers = NewHeaders()
-	data = []byte("       Host : localhost:42069       \r\n\r\n")
+	data = []byte("       Host : localhost:8080       \r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.Error(t, err)
 	assert.Equal(t, 0, n)
@@ -28,21 +28,21 @@ func TestNewHeader(t *testing.T) {
 
 	// Test: Valid single header with extra whitespace
 	headers = NewHeaders()
-	data = []byte("       Host: localhost:42069                           \r\n\r\n")
+	data = []byte("       Host: localhost:8080                           \r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.NoError(t, err)
 	require.NotNil(t, headers)
-	assert.Equal(t, "localhost:42069", headers["host"])
+	assert.Equal(t, "localhost:8080", headers["host"])
 	assert.Equal(t, 57, n)
 	assert.False(t, done)
 
 	// Test: Valid 2 headers with existing headers
-	headers = map[string]string{"host": "localhost:42069"}
+	headers = map[string]string{"host": "localhost:8080"}
 	data = []byte("User-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.NoError(t, err)
 	require.NotNil(t, headers)
-	assert.Equal(t, "localhost:42069", headers["host"])
+	assert.Equal(t, "localhost:8080", headers["host"])
 	assert.Equal(t, "curl/7.81.0", headers["user-agent"])
 	assert.Equal(t, 25, n)
 	assert.False(t, done)
@@ -59,7 +59,7 @@ func TestNewHeader(t *testing.T) {
 
 	// Test: Invalid token in header
 	headers = NewHeaders()
-	data = []byte("H@st: localhost:42069\r\n\r\n")
+	data = []byte("H@st: localhost:8080\r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.Error(t, err)
 	assert.Equal(t, 0, n)
@@ -67,7 +67,7 @@ func TestNewHeader(t *testing.T) {
 
 	// Test: Invalid token in header
 	headers = NewHeaders()
-	data = []byte("h@st: localhost:42069\r\n\r\n")
+	data = []byte("h@st: localhost:8080\r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.Error(t, err)
 	assert.Equal(t, 0, n)

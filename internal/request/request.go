@@ -20,14 +20,16 @@ const (
 	requestParsingBody
 )
 
+// Request represents an HTTP request
 type Request struct {
-	state          requestState
-	RequestLine    RequestLine
-	Headers        headers.Headers
-	Body           []byte
-	bodyLengthRead int
+	state          requestState    // current parsing state
+	RequestLine    RequestLine     // HTTP method, target path, and HTTP version
+	Headers        headers.Headers // HTTP headers
+	Body           []byte          // request body
+	bodyLengthRead int             // track of body bytes already read (parsed)
 }
 
+// RequestLine represents the start line in HTTP request
 type RequestLine struct {
 	HttpVersion   string
 	RequestTarget string
@@ -88,6 +90,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	return request, nil
 }
 
+// parse process the incoming raw data
 func (r *Request) parse(data []byte) (int, error) {
 	totalParsed := 0
 	for r.state != requestDone {
@@ -103,9 +106,11 @@ func (r *Request) parse(data []byte) (int, error) {
 	return totalParsed, nil
 }
 
+// parseSingle reads/parses the next part of the HTTP request based on the current state
 func (r *Request) parseSingle(data []byte) (int, error) {
 	switch r.state {
 
+	// requestInitialized case handles the start line part
 	case requestInitialized:
 		request, n, err := parseRequestLine(data)
 		if err != nil {
@@ -118,6 +123,7 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 		r.state = requestParsingHeader
 		return n, nil
 
+	// requestParsingHeader case handles the headers
 	case requestParsingHeader:
 		n, done, err := r.Headers.Parse(data)
 		if err != nil {
@@ -128,6 +134,7 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 		}
 		return n, nil
 
+	// requestParsingBody case handles the body (if any)
 	case requestParsingBody:
 		lengthVal, ok := r.Headers.Get("content-length")
 		if !ok {
@@ -159,6 +166,7 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 	}
 }
 
+// parseRequestLine reads/parses the start-line
 func parseRequestLine(data []byte) (*RequestLine, int, error) {
 	idx := bytes.Index(data, []byte(crlf))
 	if idx == -1 {
@@ -174,6 +182,7 @@ func parseRequestLine(data []byte) (*RequestLine, int, error) {
 	return requestLine, idx + 2, nil
 }
 
+// requestLineFromString parses the start line from string to RequestLine
 func requestLineFromString(str string) (*RequestLine, error) {
 	lines := strings.Split(str, " ")
 

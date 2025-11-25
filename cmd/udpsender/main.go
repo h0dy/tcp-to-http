@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-const port = 42069
+const port = 8080
 
 func main() {
 	udpAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("127.0.0.1:%v", port))
